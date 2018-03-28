@@ -12,11 +12,21 @@ tensorflow-gpu 1.0 要求 CUDA 8.0 和 cuDNN 5.1 安装
 
 在linux中，如果有图形界面，可以在系统设置 --> 软件与更新 --> 附加驱动中安装驱动或者更新驱动，比如，nvidia-384
 
+如果没有图形界面，可以尝试
+
+    sudo apt-get install nvidia-384 #can type nvidia then hit "tab" to view all available options
+
 终端输入nvidia-smi，可以看到所装显卡驱动的信息
 
 nvidia的显卡驱动是兼容之前版本的，也就是说，旧的驱动不支持新的显卡，但新的驱动是支持旧的显卡的。
 
 第二步，是CUDA 8.0安装
+
+在linux中，如果之前没有安装过CUDA（ls /usr/local查看），可以用apt安装。
+    
+    sudo apt-get install cuda-8-0
+    
+如果之前装过其他版本的CUDA，可能不能成功安装，这时候需要先下载cuda-8-0的安装文件，然后手动安装。
 
 在[CUDA Toolkit Archive](https://developer.nvidia.com/cuda-toolkit-archive)中找到[CUDA Toolkit 8.0 - Feb 2017](https://developer.nvidia.com/cuda-80-ga2-download-archive)，选择操作系统等，然后下载。
 
