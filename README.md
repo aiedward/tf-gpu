@@ -29,6 +29,18 @@ windows:
 
 nvidia的显卡驱动是兼容之前版本的，也就是说，旧的驱动不支持新的显卡，但新的驱动是支持旧的显卡的。
 
+[显卡支持信息](https://github.com/NVIDIA/nvidia-docker/wiki/CUDA)
+
+如果是旧的驱动，nvidia-smi可能不能显示足够多的信息；另外，nvidia-smi不显示足够多的信息也可能是因为显卡型号太老，所以不再支持。
+
+在windows中，nvidia-smi并不是shell命令，所以必须用某种terminal进到nvidia-smi.exe所在文件夹中，再执行nvidia-smi.
+
+nvidia-smi还是比较必要的，可以看到具体程序比如python对gpu的使用情况，但展示的信息还很不够，在使用tensorflow-gpu的过程中，需要探索更多的monitor gpu的方法。有了这些方法，即使没有nvidia-smi也是可以工作的。
+
+[How to Update Nvidia Drivers](https://www.wikihow.com/Update-Nvidia-Drivers)
+
+可以使用GeForce Experience来更新驱动，但是，系统做的太差，注册经常都无法成功。
+
 [libcublas.so.8.0 error with tensorflow](https://stackoverflow.com/questions/44865253/libcublas-so-8-0-error-with-tensorflow)
 
 第二步，是CUDA 8.0安装
@@ -50,6 +62,10 @@ Note: I strongly suggest not to sue it, as it changes the paths and makes the in
 
 先装Base Installer，然后Patch 2。CUDA自带驱动很旧，记得取消勾选，只装CUDA。(其实也可以用旧的驱动，新的驱动当然可以使用，但旧的驱动用在对应的cuda上也没问题）
 
+There is only one requirement, that one needs to satisfy in order to install multiple CUDA on the same machine. You need to have latest Nvidia driver that is required by the highest CUDA that you’re going to install. Usually it is a good idea to install precise driver that was used during the build of CUDA.
+
+所以，不一定最新的驱动就是最好的，有可能和相应的cuda最为匹配的驱动是最好的。
+
 在linux中，可以用命令行下载，wget或者curl。下载一般选择runfile(local)，可能很大. 用runfile的话，可以自己控制一些安装选择。用.deb的话，不能自主控制
 
     sudo chmod +x cuda_8.0.61_375.26_linux.run
@@ -58,6 +74,8 @@ Note: I strongly suggest not to sue it, as it changes the paths and makes the in
 override是因为电脑上的gcc版本相对安装文件可能偏高，使用override可以忽略这一点。如果不加，会碰到一个错误，Installation Failed. Using unsupported Compiler. ，这是因为 Ubuntu 16.04 默认的 GCC 5.4 对于 CUDA 8.x来说过于新了，CUDA 安装脚本还不能识别新版本的 GCC。
 
 在linux装好cuda之后，有可能需要重启电脑。
+
+[不用runfile而用deb安装cuda 8.0](https://blog.csdn.net/xingce_cs/article/details/74079783)
     
 第三步，是cuDNN 5.1安装
 
@@ -97,7 +115,7 @@ Cudnn解压后将bin,include,lib三个文件夹里面的内容覆盖至Cuda安�
     
 注：用这种方式安装会自动装上conda的cuda和cudnn，系统不用另外安装，即便装了调用的也是conda的社区版本。conda的win64通道已经删掉1.0。且win仍需在系统装CUDA和cuDNN，否则会缺DLL。
 
-注：不推荐用conda安装，装的是社区包，官方并不支持，由此产生的问题自行解决。
+注：不推荐用conda安装，装的是社区包，官方并不支持，由此产生的问题需要自行解决。
 
 最常用的tensorflow-gpu安装是使用pip，比如
 
@@ -123,6 +141,32 @@ Cudnn解压后将bin,include,lib三个文件夹里面的内容覆盖至Cuda安�
     print(tf.test.gpu_device_name())
     
 正常会输出/gpu:0
+
+[Tensorflow: How do you monitor GPU performance during model training in real-time?](https://stackoverflow.com/questions/45544603/tensorflow-how-do-you-monitor-gpu-performance-during-model-training-in-real-tim)
+
+[Is there a way to verify Tensorflow Serving is using GPUs on a GPU instance](https://github.com/tensorflow/serving/issues/345)
+
+在python中，可以设置logging系统的输出强度，是info就输出，是warning就输出，还是error才输出。而且，在一个脚本中，可以有不同的logging系统，分别设置不同的输出强度，这样的结果就是，有些logger的info就输出了，有些logger的error才输出。
+
+在tensorflow的训练中，有时候训练特别慢，就会希望输出尽可能多的信息，降低各个logger的输出设置，有时候训练特别快，就会希望少输出一些信息，提高各个logger的输出设置。
+
+在tensorflow的logging系统打出的信息中，I代表info，W代表warning，E代表error.
+
+tensorflow的内存（显存）溢出或者训练特别慢的话，比较明显的是三种处理办法，一是降低batch size（epochs其实没有关系，反正也是放在循环中），二是简化模型，减少模型参数，比如减少网络层数，减少网络unit个数，减少输入长度等，可能需要对模型、数据进行可视化，三是购置更加先进、更大内存与显存的机器。
+
+在tensorflow release版本（也就是pip安装的版本） 1.0中有一个bug（在windows中可见），logging系统会打印Error：OpKernel ('op: "BestSplits" device_type: "CPU"') for unknown op: BestSplits等，不影响tensorflow的运行，但确实是bug，在tensorflow 1.1中修正了，另外，在tenforflow 1.0中，logging.info有很多，很多info信息都会输出，在tensorflow 1.1中，相比1.0输出较少的info信息。所以，能用tensorflow 1.1的话，就不要用tensorflow 1.0, 如果必须用tensorflow 1.0，用linux版本而不要用windows版本。
+
+[TensorFlow version 1.0.0-rc2 on Windows](https://github.com/tensorflow/tensorflow/issues/7500)
+
+tensorflow 1.1中增加了一个额外的warning, The TensorFlow library wasn't compiled to use SSE instructions, but these are available on your machine and could speed up CPU computations等。这表明TensorFlow release版没有对特定硬件进行编译优化，如果要优化TensorFlow的运行效率，需要自己编译。
+
+在使用tensorflow时，可以通过环境变量TF_CPP_MIN_LOG_LEVEL来设置tensorflow中logging的输出强度。TF_CPP_MIN_LOG_LEVEL is a TensorFlow environment variable responsible for the logs, to silence INFO logs set it to 1, to filter out WARNING 2 and to additionally silence ERROR logs (not recommended) set it to 3。默认值是0（?），info也会输出，如果设成1，info不再输出，如果设成2，warning不再输出，如果设成3，error也不再输出。一般情况下，是不推荐设成3的，但因为tensorflow的开发非常快，error在所难免，有些error也并不影响脚本的正常运行，所以，在某些情况下，不想被tensorflow输出的信息打扰时，可以把TF_CPP_MIN_LOG_LEVEL设成3，百度的Dureader就是这样做的。但是，这样的话，控制gpu的某些信息就没法在tensorflow运行时看到，如果想看到tensorflow-gpu的运行，建议设成1，甚至设成0.
+
+[The TensorFlow library wasn't compiled to use SSE instructions](https://github.com/tensorflow/tensorflow/issues/7778)
+
+[编译优化TensorFlow](http://blog.rickdyang.me/2017-05/tensorflow-build/)
+
+在windows中，python 3.5的价值就在于可以用tensorflow 1.1（和1.0一样，还是Cuda 8.0+cuDNN 5.1），而python 3.6则是tensorflow 1.2起。
 
 第五步，create symlink
 
