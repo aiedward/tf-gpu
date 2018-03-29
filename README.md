@@ -63,7 +63,18 @@ cuDNN下载需要先注册，对于ubuntu等一般选择linux版本下载，比�
 [cuDNN最新版本](https://developer.nvidia.com/rdp/cudnn-download)
 [cuDNN历史版本](https://developer.nvidia.com/rdp/cudnn-archive)
 
-因为下载需要用户名和密码，所以一般的wget或curl命令没法下载，需要authenication，如果要用命令行，需要python中requests之类的工具，来模拟发出带有用户名和密码的请求信息。
+因为下载需要用户名和密码，所以一般的wget或curl命令没法下载，需要authenication，如果要用命令行，需要python中requests之类的工具，来模拟发出带有用户名和密码的请求信息。所以，对于远程的机器，一般是先在本地下载好，然后用scp传到远程机器上。
+
+复制文件:
+
+    $scp local_file remote_username@remote_ip:remote_folder
+    $scp local_file remote_username@remote_ip:remote_file
+    
+复制目录：
+
+    $scp -r local_folder remote_username@remote_ip:remote_folder
+    
+[scp 跨机远程拷贝](http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/scp.html)
 
     tar -xzvf cudnn-8.0-linux-x64-v5.1.tgz
     sudo cp cuda/include/cudnn.h /usr/local/cuda-8.0/include
