@@ -11,7 +11,11 @@ ubuntu:
 windows:
 [Tensorflow+cuda+cudnn+window+Python之window下安装TensorFlow](https://blog.csdn.net/flying_sfeng/article/details/58057400)
 
+[windows 下 TensorFlow（GPU 版）的安装](https://blog.csdn.net/lanchunhui/article/details/54964064)
+
 第一步，是核实机器有gpu并给gpu装驱动
+
+如果你的显卡是nvidia的而且支持CUDA Compute Capability 3.0以上（6系之后高于50甜点卡的型号），那么可以用GPU进行运算，详见[支持设备列表](https://developer.nvidia.com/cuda-gpus)
 
 在windows中，在设备管理器中可以看到显卡配置；显卡驱动一般已经在装系统时装好，不用额外操心
 
@@ -43,6 +47,8 @@ Note: I strongly suggest not to sue it, as it changes the paths and makes the in
 在[CUDA Toolkit Archive](https://developer.nvidia.com/cuda-toolkit-archive)中找到[CUDA Toolkit 8.0 - Feb 2017](https://developer.nvidia.com/cuda-80-ga2-download-archive)，选择操作系统等，然后下载。
 
 在windows中，下载后运行exe文件，如果网络条件还可以，就选择网络版的exe，也可以选择local。双击安装时，注意关闭其他不必要的程序，安装时很耗资源，否则有可能造成死机。安装时可能需要visual studio，作为c的编译器。安装好以后，在sample文件夹有一些可以验证cuda安装成功的程序，目前invida只提供c的源文件，要生成可执行的验证文件，需要自己用visual studio编译。
+
+先装Base Installer，然后Patch 2。CUDA自带驱动很旧，记得取消勾选，只装CUDA。(其实也可以用旧的驱动，新的驱动当然可以使用，但旧的驱动用在对应的cuda上也没问题）
 
 在linux中，可以用命令行下载，wget或者curl。下载一般选择runfile(local)，可能很大. 用runfile的话，可以自己控制一些安装选择。用.deb的话，不能自主控制
 
@@ -85,12 +91,38 @@ Cudnn解压后将bin,include,lib三个文件夹里面的内容覆盖至Cuda安�
 
 第四步，安装tensorflow-gpu
 
+可以先装conda的社区包凑合着用
+
+    conda install tensorflow-gpu=1.0
+    
+注：用这种方式安装会自动装上conda的cuda和cudnn，系统不用另外安装，即便装了调用的也是conda的社区版本。conda的win64通道已经删掉1.0。且win仍需在系统装CUDA和cuDNN，否则会缺DLL。
+
+注：不推荐用conda安装，装的是社区包，官方并不支持，由此产生的问题自行解决。
+
+最常用的tensorflow-gpu安装是使用pip，比如
+
+    pip install tensorflow-gpu==1.0 -i https://pypi.mirrors.ustc.edu.cn/simple
+
 对于windows，python3.6中的tensorflow-gpu是从1.2版本开始的，要使用1.0或者1.1，只能用python3.5
 
 安装好tensorflow-gpu之后的验证方法：
 
     from tensorflow.python.client import device_lib
     print(device_lib.list_local_devices())
+    
+安装完成后的测试代码：
+
+    import tensorflow as tf
+    hello = tf.constant('Hello, TensorFlow!')
+    sess = tf.Session()
+    print(sess.run(hello))
+    
+测试是否用上GPU
+
+    import tensorflow as tf
+    print(tf.test.gpu_device_name())
+    
+正常会输出/gpu:0
 
 第五步，create symlink
 
@@ -126,3 +158,26 @@ ubuntu install different cuda versions at the same time （It can be googled）
 
 [Using GPU from a docker container?](https://stackoverflow.com/questions/25185405/using-gpu-from-a-docker-container)
 
+补充3：对gpu的要求
+
+如果需要本地运算，建议使用带nvidia独显的机器，具体支持列表在下文tensorflow部分。
+
+若选择用GPU运算，则对CPU的要求不高，GPU显存建议至少4G。
+
+最低配置：
+
+奔腾G4560
+
+8G RAM
+
+nVIDIA GTX 1050TI （升1060要选6G版）
+
+推荐配置：
+
+i5 6500
+
+16G RAM
+
+nVIDIA GTX 1070
+
+另：如果需要长期跑项目且对虚拟化无需求的话，性价比最高的卡是1080Ti，能耗比最高是1080。
