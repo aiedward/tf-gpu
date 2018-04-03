@@ -283,6 +283,10 @@ tensorflow本质上是一种函数式的编程语言，就拿z=ax+by来说，x, 
 
 在tf.Session().run()的时候，可以把a, b的值传进去，比如a=1, b=2，就可以计算z这个tensor。当然也可以不用placeholder，直接用tf.constant，比如z=x+2y，这样在tf.Session().run()的时候，就不用传placeholder的值了。
 
+之所以用tf.placeholder，而不用tf.constant，是因为所定义的函数tensor可以复用，只要改变placeholder就可以了，这样，只要定义一次graph，就可以多次执行，而不是每次都定义graph，花费大量时间。The goal is to reuse the same graph multiple times.
+
+graph的定义和graph的执行一般是分离的，graph只定义一次，而graph的执行经常要放在for loop中，因为多个minibatch, 多个epoch。如果把graph的定义也放在for loop中，每次循环都要执行graph生成的话，就太慢了。
+
 tf.Session().run()只能计算狭义的tensor，传入placeholder的值，variable的值要么在初始化时生成（根据调用的函数内部生成variable的规则，在函数中会给出所用到的variable的initializer, 比如随机生成），要么reuse之前的值。
 
 我们自己所写的函数一般是生成tensor的函数，相当于闭包函数中的外部函数，在生成tensor的过程中会执行相关语句（也就是执行闭包函数的外部函数），但是在执行tf.Session().run()计算tensor的值的时候，不执行相关语句（执行的是闭包函数的内部函数，也就是tensor如何实现的函数，这是由tensorflow来实现的）。
