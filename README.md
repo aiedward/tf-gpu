@@ -19,7 +19,7 @@ windows:
 
 如果你的显卡是nvidia的而且支持CUDA Compute Capability 3.0以上（6系之后高于50甜点卡的型号），那么可以用GPU进行运算，详见[支持设备列表](https://developer.nvidia.com/cuda-gpus)
 
-在windows中，在设备管理器中可以看到显卡配置；显卡驱动一般已经在装系统时装好，不用额外操心
+在windows中，在设备管理器中可以看到显卡配置；显卡驱动一般已经在装系统时装好，不用额外操心。如果版本过旧或者不合适，可能需要自己升级或者重新安装驱动（目前没有相关经验）。
 
 在linux中，如果有图形界面，可以在系统设置 --> 软件与更新 --> 附加驱动中安装驱动或者更新驱动，比如，nvidia-384
 
@@ -41,7 +41,7 @@ nvidia-smi还是比较必要的，可以看到具体程序比如python对gpu的�
 
 [How to Update Nvidia Drivers](https://www.wikihow.com/Update-Nvidia-Drivers)
 
-可以使用GeForce Experience来更新驱动，但是，系统做的太差，注册经常都无法成功。
+在windows中，可以使用GeForce Experience来更新驱动（应该还有其他办法），但是，系统做的太差，注册经常都无法成功。
 
 [libcublas.so.8.0 error with tensorflow](https://stackoverflow.com/questions/44865253/libcublas-so-8-0-error-with-tensorflow)
 
@@ -230,6 +230,8 @@ nVIDIA GTX 1070
 
 百度的Dureader项目，推荐10GB以上显存，最好12GB以上。内存最好在50GB以上。可以适当放小batch值，段落长度适当截断，对代码进行适当修改，一次少载入一些内存。
 
+windows上的使用经验：16G或者8G内存，windows 7, 64位，nvidia geforce 720, 2G显存，nvidia drive 376, cuda 8.0, cudnn 5.1, tensorflow-gpu 1.1（或者tensorflow-1.0）
+
 ## Tensorflow使用
 
 tf.train.Optimizer.minimize()是简单的合并了compute_gradients()与apply_gradients()函数返回为一个优化更新后的var_list. 在实际使用过程中，似乎在compute_gradients()之后是有gradient clipping过程的，因为只用compute_gradients()与apply_gradients()是会报错的，但使用minimize()则正常运行。
@@ -417,6 +419,8 @@ Since depending on exact string names of scopes can feel dangerous, it's also po
     # capped_gradients[1][0]是个tensor，capped_gradients[1]是tensor与variable组成的tuple
     
 某些时候，在运行tf.Session().run()时非常慢，为了看的更清楚，一般采取六个办法，一是把tensor分拆，只运行最小的tensor，比如tensor的list肯定可以分拆。二是减小batch size，因为batch size表示拟合计算cost或loss的时候，一次考虑多少个样本数或者数据点，考虑的样本数越少，计算loss时越快，计算loss的梯度时也越快；当然，同一个batch内的不同样本在处理的时候是map并行处理的，只有求和算loss的时候采用reduce加总处理；减小batch size，肯定是节省显存和内存的，对于由于显存几乎占满而导致的速度问题是有效的。三是缩短样本大小（往往也要重新运行程序，得到不一样的样本分配，得到不一样的batch），如果一个batch中有多个样本，样本长度是按最长的来算的，所以batch size较大的时候，样本长度的影响还是较大的。四是重新随机初始化variable（重新运行程序），因为有可能初始化的这一批variable所在的点在计算导数时非常困难，确实算的慢。五是初始化variable的时候不再使用随机值，而是使用之前拟合后的一些值，比如启用checkpoint，这些值往往会有更好的效果，计算起来会更快。六是使用更大显存、更大内存、更强GPU的机器。
+
+即使是很差的nvidia显卡，很小的显存（比如不足2G），一般也是可以支撑batch_size=1的，可以用这样的设置来检验程序是否正确。
 
 [37 Reasons why your Neural Network is not working](https://blog.slavv.com/37-reasons-why-your-neural-network-is-not-working-4020854bd607)
 
