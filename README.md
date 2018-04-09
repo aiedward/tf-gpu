@@ -27,7 +27,7 @@ windows:
 
     sudo apt-get install nvidia-384 #can type nvidia then hit "tab" to view all available options
 
-终端输入nvidia-smi，可以看到所装显卡驱动的信息
+终端输入nvidia-smi，可以看到所装显卡驱动的信息，也可以看到gpu的基本信息
 
 nvidia的显卡驱动是兼容之前版本的，也就是说，旧的驱动不支持新的显卡，但新的驱动是支持旧的显卡的。
 
@@ -38,6 +38,8 @@ nvidia的显卡驱动是兼容之前版本的，也就是说，旧的驱动不�
 在windows中，nvidia-smi并不是shell命令，所以必须用某种terminal进到nvidia-smi.exe所在文件夹中，再执行nvidia-smi.
 
 nvidia-smi还是比较必要的，可以看到具体程序比如python对gpu的使用情况，但展示的信息还很不够，在使用tensorflow-gpu的过程中，需要探索更多的monitor gpu的方法。有了这些方法，即使没有nvidia-smi也是可以工作的。
+
+在windows中，还可以用TechPowerUp GPU-Z来查看gpu的信息；也可以用CUDA-Z来看到一些信息，虽然不是很有用。
 
 [How to Update Nvidia Drivers](https://www.wikihow.com/Update-Nvidia-Drivers)
 
@@ -78,6 +80,46 @@ override是因为电脑上的gcc版本相对安装文件可能偏高，使用ove
 在linux装好cuda之后，有可能需要重启电脑。
 
 [不用runfile而用deb安装cuda 8.0](https://blog.csdn.net/xingce_cs/article/details/74079783)
+
+使用runfile(local), 可以把cuda安装在自己的目录中，也就是自己指定安装目录，进入到runfile所在的文件夹（比如downloads）
+
+    $ sudo sh runfile.run --silent \
+                --toolkit --toolkitpath=/my/new/toolkit \
+                --samples --samplespath=/my/new/samples
+                
+比如
+
+    sudo sh ./cuda_8.0.61_375.26_linux-run --silent --toolkit --toolkitpath=/home/deco/local/cuda-8.0 --samples --samplespath=/home/deco/local/cuda-8.0/samples
+                
+就可以安装在指定的目录中，其中toolkitpath就是指定的目录，samplespath是验证安装成功的samples所在的目录。也可以用conda引入专门的目录，把工具装到某个虚拟环境的目录中，这样，当remove某个虚拟环境的时候，就可以把该工具的目录也一起删掉。
+
+另外，需要导入环境变量
+
+    export PATH=/my/new/toolkit/bin/:$PATH
+    export LD_LIBRARY_PATH=/my/new/toolkit/lib64/:$LD_LIBRARY_PATH
+    
+或者
+
+    export PATH=/home/deco/local/cuda-8.0/bin${PATH:+:${PATH}}
+    export LD_LIBRARY_PATH=/home/deco/local/cuda-8.0/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+    
+导入了PATH之后，nvcc命令就可以找到了，可以用来看cuda的信息
+
+    nvcc --version
+    
+Now, we have the environment and the TensorFlow installed. Question how this environment will know which CUDA to use? First of all, we need to understand how TensoFlow (and any other DL framework) is searching where CUDA is installed. Since CUDA is just binary files (libraries), other programs are searching it among the paths, that are specified in the LD_LIBRARY_PATH variable. So, if this path includes files from the CUDA9.0 then CUDA9.0 will be used by any DL framework. Okay, we just need to set the variable correctly (LD_LIBRARY_PATH) for each of our environment。
+
+可见，LD_LIBRARY_PATH是tensorflow寻找cuda所需要的环境变量，PATH的设置其实不是很必要，但不设的话，就找不到nvcc命令
+
+要用samples验证cuda安装成功的话，需要
+
+    cd /usr/local/cuda-8.0/samples/1_Utilities/deviceQuery
+    sudo make
+    ./deviceQuery
+    
+会输出相关信息
+
+cuda 8.0还有patch 2需要安装，对效率和安全性都有提升，但目前还不知道在linux中是否能安装到指定目录中，也还没有尝试安装。
     
 第三步，是cuDNN 5.1安装
 
@@ -102,14 +144,25 @@ cuDNN下载需要先注册，对于ubuntu等一般选择linux版本下载，比�
     
 [scp 跨机远程拷贝](http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/scp.html)
 
+linux安装，首先解压，然后拷贝文件
+
     tar -xzvf cudnn-8.0-linux-x64-v5.1.tgz
     sudo cp cuda/include/cudnn.h /usr/local/cuda-8.0/include
     sudo cp cuda/lib64/libcudnn* /usr/local/cuda-8.0/lib64
     
+具体来讲
+
+    tar -xzvf cudnn-8.0-linux-x64-v5.1.tgz
+    sudo cp cuda/include/cudnn.h /home/deco/local/cuda-8.0/include
+    sudo cp cuda/lib64/libcudnn* /home/deco/local/cuda-8.0/lib64
+   
 windows安装    
 Cudnn解压后将bin,include,lib三个文件夹里面的内容覆盖至Cuda安装目录下，默认路径为C:\Program Files\NVIDIA GPUComputing Toolkit\CUDA\v8.0（记住不是替换，是把Cudnn文件里的.dll文件添加到Cuda里面）
 
+
 第四步，安装tensorflow-gpu
+
+目前python 2.7在pip中已经没有支持的tensorflow，但相信还是可以找到支持python 2.7的tensorflow的下载地址的。
 
 可以先装conda的社区包凑合着用
 
@@ -230,7 +283,9 @@ nVIDIA GTX 1070
 
 百度的Dureader项目，推荐10GB以上显存，最好12GB以上。内存最好在50GB以上。可以适当放小batch值，段落长度适当截断，对代码进行适当修改，一次少载入一些内存。
 
-windows上的使用经验：16G或者8G内存，windows 7, 64位，nvidia geforce 720, 2G显存，nvidia drive 376, cuda 8.0, cudnn 5.1, tensorflow-gpu 1.1（或者tensorflow-1.0）
+windows上的使用经验：16G或者8G内存，windows 7, 64位，nvidia geforce GT 720, 2G显存，nvidia driver 376, cuda 8.0, cudnn 5.1, tensorflow-gpu 1.1（或者tensorflow-1.0）
+
+linux上的使用经验：65G内存，ubuntu 16.04, 64位，nvidia geforce GTX 1080 (4个gpu)，每个gpu有8G显存，nvidia driver 387.26, cuda 8.0, cudnn 5.1, tensorflow-gpu 1.1。跑Dureader项目时，batch size为16时16*2500*300要占掉4G多接近5G的显存，batch size为32时大概需要9-10G显存，8G显存显然不够，会报显存耗尽的错误。batch size太大，显存不够的话，能报错是比较好的，但有些时候，电脑直接卡死，根本不会报错。
 
 ## Tensorflow使用
 
@@ -273,6 +328,8 @@ tf.train.Optimizer.compute_gradients(loss, var_list=None): 对var_list中的变�
     self.sess = tf.Session(config=sess_config)
     
 多进程使用GPU会导致OUT_OF_MEMORY_ERROR，这是由于tf默认会给任一进程分配所有能分配的显存，这样除了第一个进程其他进程都无显存可用。解决办法有两个，一是在运行命令前添加 CUDA_VISIBLE_DEVICES=9999（或任一大于你的显卡数的数字）禁用显卡，推荐对ps进程使用。二是在server配置里添加gpu_options=tf.GPUOptions(allow_growth=True)（或gpu_fraction）使得tf不会一次将显存分配完而是随着使用量逐渐增加.
+
+当设定sess_config.gpu_options.allow_growth = True的时候，某个tensorflow进程占用显存是逐渐增加的，比如刚开始没训练的时候只占100M，到后来占到4G多（batch size为16时所占掉的显存）
 
 [分布式Tensorflow的梯度累积与异步更新](https://zhuanlan.zhihu.com/p/23060519)
     
@@ -421,6 +478,8 @@ Since depending on exact string names of scopes can feel dangerous, it's also po
 某些时候，在运行tf.Session().run()时非常慢，为了看的更清楚，一般采取六个办法，一是把tensor分拆，只运行最小的tensor，比如tensor的list肯定可以分拆。二是减小batch size，因为batch size表示拟合计算cost或loss的时候，一次考虑多少个样本数或者数据点，考虑的样本数越少，计算loss时越快，计算loss的梯度时也越快；当然，同一个batch内的不同样本在处理的时候是map并行处理的，只有求和算loss的时候采用reduce加总处理；减小batch size，肯定是节省显存和内存的，对于由于显存几乎占满而导致的速度问题是有效的。三是缩短样本大小（往往也要重新运行程序，得到不一样的样本分配，得到不一样的batch），如果一个batch中有多个样本，样本长度是按最长的来算的，所以batch size较大的时候，样本长度的影响还是较大的。四是重新随机初始化variable（重新运行程序），因为有可能初始化的这一批variable所在的点在计算导数时非常困难，确实算的慢。五是初始化variable的时候不再使用随机值，而是使用之前拟合后的一些值，比如启用checkpoint，这些值往往会有更好的效果，计算起来会更快。六是使用更大显存、更大内存、更强GPU的机器。
 
 即使是很差的nvidia显卡，很小的显存（比如不足2G），一般也是可以支撑batch_size=1的，可以用这样的设置来检验程序是否正确。
+
+当batch size为16时，就是16个样本并行计算运行，如果是95个样本，只需要6个batch就能运行完，16*5+15，如果是100个样本，只需要7个batch就能运行完，16*6+4。
 
 [37 Reasons why your Neural Network is not working](https://blog.slavv.com/37-reasons-why-your-neural-network-is-not-working-4020854bd607)
 
