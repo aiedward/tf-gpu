@@ -17,6 +17,11 @@ windows:
 
 第一步，是核实机器有gpu并给gpu装驱动
 
+How do I install the NVIDIA driver?
+
+The recommended way is to use your [package manager](http://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#package-manager-installation) and install the cuda-drivers package (or equivalent).
+When no packages are available, you should use an official ["runfile"](http://www.nvidia.com/object/unix.html).
+
 如果你的显卡是nvidia的而且支持CUDA Compute Capability 3.0以上（6系之后高于50甜点卡的型号），那么可以用GPU进行运算，详见[支持设备列表](https://developer.nvidia.com/cuda-gpus)
 
 在windows中，在设备管理器中可以看到显卡配置；显卡驱动一般已经在装系统时装好，不用额外操心。如果版本过旧或者不合适，可能需要自己升级或者重新安装驱动（目前没有相关经验）。
