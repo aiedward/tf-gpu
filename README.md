@@ -490,3 +490,10 @@ Since depending on exact string names of scopes can feel dangerous, it's also po
 
 在tensorflow的早期版本中，tensorflow自带tensorboard，但在pip freeze中却看不到tensorboard; 后来，从pip freeze中可以看到tensorflow-tensorboard；在tensorflow 1.6以及之后的版本中，从pip freeze可以看到tensorboard.
 
+tensorflow版本查看及安装路径：
+
+    import tensorflow as tf
+    tf.__version__
+    tf.__path__
+    
+    
