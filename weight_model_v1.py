@@ -105,8 +105,46 @@ def similarity_test():
         }))
 
 
+def get_probabilities_cost(init_weight, input_host, input_guest, y):
+    """
+    计算每个样本在各个类别的概率
+    :return: optimizer
+    """
+
+    similarity = similarity_matrix(init_weight, input_host, input_guest)
+
+    logits = tf.identity(similarity, name='logits')
+
+    cost = tf.reduce_mean(
+        tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits, labels=y))
+    return cost
+
+
+def probability_test():
+    host = [[1, 0, 1, 0], [1, 1, 1, 1]]
+    guest = [[1, 0, 1, 0], [0, 1, 0, 1], [1, 1, 1, 1], [0, 0, 0, 0]]
+    labels = [[1, 0], [1, 0], [0, 1], [0, 1]]
+    init_weight = [1.0, 2.0, 1.0, 1.0]
+
+    input_host = neural_net_text_input(len(init_weight), "input_host")
+    input_guest = neural_net_text_input(len(init_weight), "input_guest")
+    y = neural_net_label_input(2)
+
+    cost = get_probabilities_cost(init_weight, input_host, input_guest, y)
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        print(sess.run(cost, feed_dict={
+            input_host: host,
+            input_guest: guest,
+            y: labels
+        }))
+
+
 if __name__ == '__main__':
 
     # neural_net_weight_tensor_test()
 
-    similarity_test()
+    # similarity_test()
+
+    probability_test()
