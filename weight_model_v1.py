@@ -80,8 +80,11 @@ def similarity_matrix(init_weight, input_host, input_guest):
     input_guest: tensor
     :return: a tensorflow matrix tensor
     """
-    output_host = vector_transform(init_weight, input_host)
-    output_guest = vector_transform(init_weight, input_guest)
+    # output_host = vector_transform(init_weight, input_host)
+    # output_guest = vector_transform(init_weight, input_guest)
+    weight_matrix = neural_net_weight_tensor(init_weight)
+    output_host = tf.matmul(input_host, weight_matrix)
+    output_guest = tf.matmul(input_guest, weight_matrix)
     similarity = tf.matmul(output_guest, tf.transpose(output_host))
 
     return similarity
