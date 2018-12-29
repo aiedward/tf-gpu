@@ -74,3 +74,79 @@ def get_probabilities_cost(similarity, y):
     return cost
 
 
+def get_optimizer_single(cost):
+    """
+    host中每个类别只有一个句子; 完成一次梯度下降
+    cost: tensor with variable and placeholder
+    :return: optimizer
+    """
+    optimizer = tf.train.AdamOptimizer().minimize(cost)
+
+    return optimizer
+
+
+def get_accuracy(similarity, y):
+    """
+    计算正确率
+    :param similarity: tensor with variable and placeholder
+    :param y: placeholder
+    :return: tensor with variable and placeholder
+    """
+    correct_pred = tf.equal(tf.argmax(similarity, 1), tf.argmax(y, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32),
+                              name='accuracy')
+    return accuracy
+
+
+def train_batch(epochs):
+
+    host = [[1, 0, 1, 0], [1, 1, 1, 1]]
+    guest = [[1, 0, 1, 0], [0, 1, 0, 1], [1, 1, 1, 1], [0, 0, 0, 0]]
+    labels = [[1, 0], [1, 0], [0, 1], [0, 1]]
+    init_weight = [1.0, 2.0, 1.0, 1.0]
+
+    input_host = neural_net_text_input(len(init_weight), "input_host")
+    input_guest = neural_net_text_input(len(init_weight), "input_guest")
+    y = neural_net_label_input(2)
+
+    weight_matrix = neural_net_weight_tensor(init_weight)
+    similarity = similarity_matrix(weight_matrix, input_host, input_guest)
+    cost = get_probabilities_cost(similarity, y)
+    optimizer = get_optimizer_single(cost)
+
+    accuracy = get_accuracy(similarity, y)
+
+    print('Checking the Training on a Single Batch...')
+    with tf.Session() as sess:
+        # Initializing the variables
+        sess.run(tf.global_variables_initializer())
+
+        # Training cycle
+        for epoch in range(epochs):
+            sess.run(optimizer, feed_dict={
+                input_host: host,
+                input_guest: guest,
+                y: labels
+            })
+
+            loss = sess.run(cost, feed_dict={
+                input_host: host,
+                input_guest: guest,
+                y: labels
+            })
+            train_acc = sess.run(accuracy, feed_dict={
+                input_host: host,
+                input_guest: guest,
+                y: labels
+            })
+            weights = sess.run(weight_matrix)
+
+            if epoch % 100 == 0:
+                print('Epoch {:>2}:  '.format(epoch + 1), end='')
+                print('Loss: {:>10.4f} Training Accuracy: {:.6f}'.format(
+                    loss, train_acc))
+                print(weights, end='\n\n')
+
+
+if __name__ == '__main__':
+    train_batch(500)
