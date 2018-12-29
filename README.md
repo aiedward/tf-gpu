@@ -496,4 +496,18 @@ tensorflow版本查看及安装路径：
     tf.__version__
     tf.__path__
     
+[Python 之 numpy 和 tensorflow 中的各种乘法（点乘和矩阵乘）](https://www.cnblogs.com/liuq/p/9330134.html)
+
+tensorflow中矩阵或者向量的逐项相乘
+
+    w = tf.Variable([[0.4], [1.2]], dtype=tf.float32) # w.shape: [2, 1]
+    x = tf.Variable([range(1,6), range(5,10)], dtype=tf.float32) # x.shape: [2, 5]
+    y = w * x     # 等同于 y = tf.multiply(w, x)   y.shape: [2, 5]
+ 
+tensorflow中的矩阵乘法
+
+    w = tf.Variable([[0.4, 1.2]], dtype=tf.float32) # w.shape: [1, 2]
+    x = tf.Variable([range(1,6), range(5,10)], dtype=tf.float32) # x.shape: [2, 5]
+    y = tf.matmul(w, x) # y.shape: [1, 5]
+    
     
