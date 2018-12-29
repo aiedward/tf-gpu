@@ -161,6 +161,19 @@ def get_optimizer_single(init_weight, input_host, input_guest, y):
     return optimizer
 
 
+def get_accuracy(similarity, y):
+    """
+    计算正确率
+    :param similarity: tensor
+    :param y: placeholder
+    :return: tensor
+    """
+    correct_pred = tf.equal(tf.argmax(similarity, 1), tf.argmax(y, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32),
+                              name='accuracy')
+    return accuracy
+
+
 def run_optimizer():
 
     host = [[1, 0, 1, 0], [1, 1, 1, 1]]
@@ -172,7 +185,13 @@ def run_optimizer():
     input_guest = neural_net_text_input(len(init_weight), "input_guest")
     y = neural_net_label_input(2)
 
+    similarity = similarity_matrix(init_weight, input_host, input_guest)
+
     optimizer = get_optimizer_single(init_weight, input_host, input_guest, y)
+
+    cost = get_probabilities_cost(init_weight, input_host, input_guest, y)
+
+    accuracy = get_accuracy(similarity, y)
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
@@ -181,6 +200,20 @@ def run_optimizer():
             input_guest: guest,
             y: labels
         })
+
+        loss = sess.run(cost, feed_dict={
+            input_host: host,
+            input_guest: guest,
+            y: labels
+        })
+        valid_acc = sess.run(accuracy, feed_dict={
+            input_host: host,
+            input_guest: guest,
+            y: labels
+        })
+
+        print('Loss: {:>10.4f} Training Accuracy: {:.6f}'.format(
+            loss, valid_acc))
 
 
 if __name__ == '__main__':
