@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 
 
@@ -115,11 +116,18 @@ def train_batch(epochs):
     optimizer = get_optimizer_single(cost)
 
     accuracy = get_accuracy(similarity, y)
+    all_params = tf.trainable_variables()
+    # variable组成的list
 
     print('Checking the Training on a Single Batch...')
     with tf.Session() as sess:
         # Initializing the variables
         sess.run(tf.global_variables_initializer())
+
+        param_num = sum([np.prod(sess.run(tf.shape(v)))
+                         for v in all_params])
+
+        print('There are {} variables in the model'.format(param_num))
 
         # Training cycle
         for epoch in range(epochs):
