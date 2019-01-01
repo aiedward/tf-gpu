@@ -172,6 +172,8 @@ class Vocab:
                 # python 3中的float是float64，相当于c语言中的双精度浮点型
                 # 谈谈关于Python里面小数点精度控制的问题
                 # https://www.cnblogs.com/herbert/p/3402245.html
+                # Numpy float64 vs Python float
+                # https://stackoverflow.com/questions/27098529/numpy-float64-vs-python-float
                 if self.embed_dim is None:
                     self.embed_dim = len(contents) - 1
         filtered_tokens = trained_embeddings.keys()
