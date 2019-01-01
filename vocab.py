@@ -29,6 +29,8 @@ class Vocab:
         self.unk_token = '<unk>'
         # unknown
 
+        # In fasttext word vector, </s> means space?
+
         self.initial_tokens = initial_tokens if initial_tokens is not None \
             else []
         self.initial_tokens.extend([self.pad_token, self.unk_token])
@@ -155,12 +157,21 @@ class Vocab:
         """
         trained_embeddings = {}
         with open(embedding_path, 'r') as fin:
+            line = next(fin)
+            contents = line.strip().split()
+            word_num = int(contents[0])
+            word_dim = int(contents[1])
+            # 对于fasttext word vector，理论上会用掉700M内存
             for line in fin:
                 contents = line.strip().split()
                 token = contents[0]
                 if token not in self.token2id:
                     continue
                 trained_embeddings[token] = list(map(float, contents[1:]))
+                # In fasttext word vector, the format applies
+                # python 3中的float是float64，相当于c语言中的双精度浮点型
+                # 谈谈关于Python里面小数点精度控制的问题
+                # https://www.cnblogs.com/herbert/p/3402245.html
                 if self.embed_dim is None:
                     self.embed_dim = len(contents) - 1
         filtered_tokens = trained_embeddings.keys()
@@ -172,10 +183,13 @@ class Vocab:
         for token in filtered_tokens:
             self.add(token, cnt=0)
         # load embeddings
-        self.embeddings = np.zeros([self.size(), self.embed_dim])
+        self.embeddings = np.zeros([word_num, word_dim])
+        # self.embeddings = np.zeros([self.size(), self.embed_dim])
         for token in self.token2id.keys():
             if token in trained_embeddings:
                 self.embeddings[self.get_id(token)] = trained_embeddings[token]
+        print("The pretrained embeddings from {} are loaded".format(
+            embedding_path))
 
     def convert_to_ids(self, tokens):
         """
@@ -203,3 +217,8 @@ class Vocab:
             if stop_id is not None and i == stop_id:
                 break
         return tokens
+
+
+if __name__ == "__main__":
+    import config
+    Vocab().load_pretrained_embeddings(config.embedding_path)

@@ -44,4 +44,7 @@ def embed(p_place):
 
         w_emb = tf.nn.embedding_lookup(word_embeddings, p_place)
         s_emb = tf.reduce_mean(w_emb, axis=1)  # 0 or 1?
+        # Difference between np.mean and tf.reduce_mean in Numpy
+        # and Tensorflow?
+        # https://stackoverflow.com/questions/34236252/difference-between-np-mean-and-tf-reduce-mean-in-numpy-and-tensorflow
         return s_emb
