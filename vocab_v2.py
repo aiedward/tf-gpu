@@ -109,6 +109,9 @@ class Vocab:
                 if self.embed_dim is None:
                     self.embed_dim = len(contents) - 1
 
+        for token in [self.pad_token, self.unk_token]:
+            trained_embeddings[token] = np.zeros([self.embed_dim])
+
         filtered_tokens = trained_embeddings.keys()
         # rebuild the token x id map
         # 只保留Vocab当中有embedding的词汇
