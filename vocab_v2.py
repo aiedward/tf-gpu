@@ -109,6 +109,15 @@ class Vocab:
                 if self.embed_dim is None:
                     self.embed_dim = len(contents) - 1
 
+        filtered_tokens = trained_embeddings.keys()
+        # rebuild the token x id map
+        # 只保留Vocab当中有embedding的词汇
+        self.token2id = {}
+        self.id2token = {}
+        for token in filtered_tokens:
+            self.add(token, cnt=0)
+        print("Number of vocab that have embeddings:", self.size())
+
         # load embeddings
         self.embeddings = np.zeros([self.size(), self.embed_dim])
         for token in self.token2id.keys():
