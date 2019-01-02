@@ -108,14 +108,7 @@ class Vocab:
                 trained_embeddings[token] = list(map(float, contents[1:]))
                 if self.embed_dim is None:
                     self.embed_dim = len(contents) - 1
-        filtered_tokens = trained_embeddings.keys()
-        # rebuild the token x id map
-        self.token2id = {}
-        self.id2token = {}
-        for token in self.initial_tokens:
-            self.add(token, cnt=0)
-        for token in filtered_tokens:
-            self.add(token, cnt=0)
+
         # load embeddings
         self.embeddings = np.zeros([self.size(), self.embed_dim])
         for token in self.token2id.keys():
