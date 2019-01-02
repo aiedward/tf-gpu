@@ -6,7 +6,7 @@
 @Desc      : 
 """
 import tensorflow as tf
-from vocab import Vocab
+from vocab_v2 import Vocab
 
 
 def text_to_ids(source_text, source_vocab_to_int):
@@ -17,7 +17,7 @@ def text_to_ids(source_text, source_vocab_to_int):
     :return: A list source_id_text
     """
     source_text_ids = [[source_vocab_to_int.get(
-        word, source_vocab_to_int['<UNK>']) for word in line.split(' ')]
+        word, source_vocab_to_int['<unk>']) for word in line.split(' ')]
         for line in source_text.split('\n')]
     return source_text_ids
 

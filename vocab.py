@@ -223,4 +223,4 @@ class Vocab:
 
 if __name__ == "__main__":
     import config
-    Vocab().load_pretrained_embeddings(config.embedding_path)
+    Vocab().load_pretrained_embeddings(config.embedding_path_air)
