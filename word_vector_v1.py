@@ -58,6 +58,7 @@ if __name__ == "__main__":
 
     sentence = "我 是 谁"
     sentence_ids = text_to_ids(sentence, vocab_main.token2id)
+    print("sentence_ids:", sentence_ids)
 
     sentence_place = tf.placeholder(tf.int32, [None, None])
     embed_main = embed(vocab_main, sentence_place)
