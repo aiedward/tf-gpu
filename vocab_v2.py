@@ -97,7 +97,10 @@ class Vocab:
         """
         trained_embeddings = {}
         with open(embedding_path, 'r', encoding='utf-8') as fin:
-            next(fin)
+            line = next(fin)
+            contents = line.strip().split()
+            if self.embed_dim is None:
+                self.embed_dim = int(contents[1])
             for line in fin:
                 contents = line.strip().split()
                 if len(contents) != self.embed_dim+1:
@@ -106,8 +109,6 @@ class Vocab:
                 if token not in self.token2id:
                     continue
                 trained_embeddings[token] = list(map(float, contents[1:]))
-                if self.embed_dim is None:
-                    self.embed_dim = len(contents) - 1
 
         for token in [self.pad_token, self.unk_token]:
             trained_embeddings[token] = np.zeros([self.embed_dim])
