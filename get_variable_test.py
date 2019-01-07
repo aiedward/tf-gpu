@@ -38,8 +38,24 @@ def produce_b():
     print(b.name)
 
 
+def constant_test():
+    tensor = tf.constant([1, 2, 3, 4, 5, 6, 7])
+
+    tensor2 = tf.constant(-1.0, shape=[2, 3])
+
+    tensor3 = tf.constant(shape=[2, 3])
+    # it does not work，常量张量必须给初始值
+    print("tensor3: ", tensor3)
+
+    with tf.Session() as sess:
+        print("tensor: ", sess.run(tensor))
+        print("tensor2: ", sess.run(tensor2))
+
+
 if __name__ == "__main__":
     a_is_c_assert()
 
     produce_a()
     produce_b()
+
+    constant_test()
