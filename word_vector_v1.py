@@ -50,7 +50,7 @@ def embed(vocab, p_place):
         # and Tensorflow?
         # https://stackoverflow.com/questions/34236252/difference-between-np-mean-and-tf-reduce-mean-in-numpy-and-tensorflow
 
-        s_emb = tf.nn.l2_normalize(s_emb)
+        s_emb = tf.nn.l2_normalize(s_emb, axis=1)
         return s_emb
 
 

@@ -107,7 +107,7 @@ def train_batch(epochs):
 
     initial_words = get_tokens(source_text)
     vocab = Vocab(initial_tokens=initial_words)
-    vocab.load_pretrained_embeddings(config.embedding_path)
+    vocab.load_pretrained_embeddings(config.embedding_path_air)
 
     sentence_ids = text_to_ids(source_text, vocab.token2id)
     sentence_ids = pad_sentence_batch(sentence_ids, vocab.token2id['<blank>'])
@@ -116,7 +116,7 @@ def train_batch(epochs):
 
     sentence_place = tf.placeholder(tf.int32, [None, None])
     embed_sentences = embed(vocab, sentence_place)
-    embed_sentences = tf.nn.l2_normalize(embed_sentences, axis=1)
+    # embed_sentences = tf.nn.l2_normalize(embed_sentences, axis=1)
 
     host = embed_sentences[:3]
     guest = embed_sentences[3:]
