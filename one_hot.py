@@ -8,8 +8,9 @@ from similarity_fit_v3 import get_tokens
 def sentence2embed(vocab, sentence_with_ids):
     embed = [0]*vocab.size()
     for digit in sentence_with_ids:
-        if digit not in [vocab.token2id['<unk>'], vocab.token2id['<blank>']]:
-            embed[digit] = 1
+        embed[digit] = 1
+        # if digit not in [vocab.token2id['<unk>'], vocab.token2id['<blank>']]:
+        #     embed[digit] = 1
     return embed
 
 
@@ -21,7 +22,7 @@ def generate_one_hot():
 
     initial_words = get_tokens(source_text)
     vocab = Vocab(initial_tokens=initial_words)
-    vocab.load_pretrained_embeddings(config.embedding_path_air)
+    vocab.load_pretrained_embeddings(config.embedding_path)
 
     sentence_ids = text_to_ids(source_text, vocab.token2id)
 
