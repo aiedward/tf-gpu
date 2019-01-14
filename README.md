@@ -511,11 +511,86 @@ tf.nn.l2_nomalize()会产生一些误差，但很小，即使不是10的-12次�
 
         return out
 
-在上面的table例子中，keys和values必须是简单的list，key和value的类型需要相同，可以都是int，float或者string。之所以有这个要求是因为tensorflow的图结构要用在优化程序中，数据结构要比较整齐才能保证有足够的效率。
+在上面的table例子中，keys和values必须是简单的list，key和value的类型需要相同，可以都是int，float或者string。之所以有这个要求是因为tensorflow的图结构要用在优化程序中，数据结构要比较整齐才能保证有足够的效率。对于二维的placehoder，本质上是list of list的结构，有时候有根据行的index来得到list（tensor）的需求，也就是对一个tensor做slice. 有这种需求的话，常用的方法是tf.gather()或者tf.gather_nd(). 除此之外，做slice的时候index也可以是tensor，需要注意tf.meshgrid()和tf.stack().
 
     tf.equal(predict_label, tf.constant(test_label))
     
 上面返回的是一个tensor，输入的参数中，predict_label是一个带有variable和placeholder的tensor，test_label是一个常量，这里，需要把它转化成tenfowflow常量，就可以和一般的tensor做比较了。
+
+tf.Session()当中，必须是tensor，可以是常量tensor，比如tf.constant(). 如果是tensor with variables，必须硬着头皮用tensorflow的相关操作，最后得到tensor输入到tf.Session()当中；这时，和tensor with variables有相互运算的量，可以用placeholder，也可以用constant或者tf.constant()；用constant或tf.constant()的好处是简单，用placehodler的场景一般是输入的样本，特别是多个batch的training sample data. 
+
+tensor用于类似for loop: [tf.map_fn](https://stackoverflow.com/questions/42892347/can-i-apply-tf-map-fn-to-multiple-inputs-outputs)
+
+    a = tf.constant([[1,2,3],[4,5,6]])
+    b = tf.constant([True, False], dtype=tf.bool)
+
+    c = tf.map_fn(lambda x: (x[0], x[1]), (a,b), dtype=(tf.int32, tf.bool))
+
+    c[0].eval()
+    array([[1, 2, 3],
+           [4, 5, 6]], dtype=int32)
+    c[1].eval()
+    array([ True, False], dtype=bool)
+    
+[How to pass list of tensors as a input to the graph in tensorflow?](https://stackoverflow.com/questions/36901287/how-to-pass-list-of-tensors-as-a-input-to-the-graph-in-tensorflow)
+
+This is possible using the new tf.map_fn(), tf.foldl() tf.foldr() or (most generally) tf.scan() higher-order operators, which were added to TensorFlow in version 0.8. The particular operator that you would use depends on the computation that you want to perform. For example, if you wanted to perform the same function on each row of the tensor and pack the elements back into a single tensor, you would use tf.map_fn():
+
+    p = tf.placeholder(tf.float32, shape=[None, None, 100])
+
+    def f(x):
+        # x will be a tensor of shape [None, 100].
+        return tf.reduce_sum(x)
+
+    # Compute the sum of each [None, 100]-sized row of `p`.
+    # N.B. You can do this directly using tf.reduce_sum(), but this is intended as 
+    # a simple example.
+    result = tf.map_fn(f, p)
+    
+tf.gather() is important for tensor slicing
+    
+[not iterable when eager execution is not enabled. ](https://stackoverflow.com/questions/49592980/tensor-objects-are-not-iterable-when-eager-execution-is-not-enabled-to-iterate)
+
+The error is happening because y_pred is a tensor (non iterable without eager execution), and itertools.permutations expects an iterable to create the permutations from. In addition, the part where you compute the minimum loss would not work either, because the values of tensor t are unknown at graph creation time.
+
+Instead of permuting the tensor, I would create permutations of the indices (this is something you can do at graph creation time), and then gather the permuted indices from the tensor. Assuming that your Keras backend is TensorFlow and that y_true/y_pred are 2-dimensional, your loss function could be implemented as follows:
+
+    def custom_mse(y_true, y_pred):
+        batch_size, n_elems = y_pred.get_shape()
+        idxs = list(itertools.permutations(range(n_elems)))
+        permutations = tf.gather(y_pred, idxs, axis=-1)  
+        # Shape=(batch_size, n_permutations, n_elems)
+        mse = K.square(permutations - y_true[:, None, :])  
+        # K means Keras
+        # Shape=(batch_size, n_permutations, n_elems)
+        mean_mse = K.mean(mse, axis=-1)  # Shape=(batch_size, n_permutations)
+        min_mse = K.min(mean_mse, axis=-1)  # Shape=(batch_size,)
+        return min_mse
+
+tf.gather_nd() and tf.meshgrid()
+
+[How to Slice tensor variables dynamically](https://stackoverflow.com/questions/50523482/how-to-slice-tensor-variables-dynamically)
+
+I would like to achieve similar operation using Tensorflow where the "input" and "idx" are populated dynamically.
+
+One way I can think when we explicitly mention "idx" is:
+
+    idx = [[[0,2],[0,0]], [[1,2],[1,0]]]
+    output = tf.gather_nd(input, idx)
+    
+But I am not sure how to construct idx = [[[0,2],[0,0]], [[1,2],[1,0]]] from dynamically populated idx = [[2 0], [2 0]]
+
+You can construct the full indices by:
+
+    #Use meshgrid to get [[0 0] [1 1]]
+    mesh = tf.meshgrid(tf.range(indices.shape[1]), tf.range(indices.shape[0]))[1]
+
+    #Stack mesh and the idx
+    full_indices = tf.stack([mesh, indices], axis=2)
+    #Output
+    # [[[0 2] [0 0]]
+    #  [[1 2] [1 0]]]
+
 
 [37 Reasons why your Neural Network is not working](https://blog.slavv.com/37-reasons-why-your-neural-network-is-not-working-4020854bd607)
 
