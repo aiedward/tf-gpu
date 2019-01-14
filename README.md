@@ -486,6 +486,37 @@ Since depending on exact string names of scopes can feel dangerous, it's also po
 
 当batch size为16时，就是16个样本并行计算运行，如果是95个样本，只需要6个batch就能运行完，16*5+15，如果是100个样本，只需要7个batch就能运行完，16*6+4。
 
+[Initialize a tensorflow variable](https://github.com/mediaProduct2017/tf-gpu/blob/master/initialize_a_variable.ipynb)
+
+Variable reuse
+
+    with tf.variable_scope("scope_name", reuse=tf.AUTO_REUSE):
+        some_variable = tf.get_variable("variable_name", shape=set(), initilizer=None, trainable=False)
+        
+如果没有给定tf.variable_scope()，或者reuse=False，那么一段生成variable的代码最多只能执行一次。如果要生成新的variable，那么reuse=False。如果reuse=True，那么表示从tensorflow的图中拿已经创建好的variable，这样不需要再给shape和initializer属性。这时候，生成variable和相关tensor的代码可以执行多次，比较像普通的python函数。如果reuse=tf.AUTO_REUSE，就是自动化的reuse=True，第一次执行时默认reuse=False，之后默认reuse=True。
+
+tf.nn.l2_nomalize()会产生一些误差，但很小，即使不是10的-12次方，也能达到10的-9次方。可以通过设置参数epsilon来忽略这种差异。
+
+    def idx2label(labels, idx):
+    """
+    labels: list of int
+    idx: int32
+    """
+        keys = list(range(len(labels))
+        values = labels
+        table = tf.contrib.lookup.HashTable(
+            tf.contrib.lookup.KeyValueTensorInitializer(keys, values), -1
+        )
+        out = table.lookup(tf.to_int32(idx))
+
+        return out
+
+在上面的table例子中，keys和values必须是简单的list，key和value的类型需要相同，可以都是int，float或者string。之所以有这个要求是因为tensorflow的图结构要用在优化程序中，数据结构要比较整齐才能保证有足够的效率。
+
+    tf.equal(predict_label, tf.constant(test_label))
+    
+上面返回的是一个tensor，输入的参数中，predict_label是一个带有variable和placeholder的tensor，test_label是一个常量，这里，需要把它转化成tenfowflow常量，就可以和一般的tensor做比较了。
+
 [37 Reasons why your Neural Network is not working](https://blog.slavv.com/37-reasons-why-your-neural-network-is-not-working-4020854bd607)
 
 在tensorflow的早期版本中，tensorflow自带tensorboard，但在pip freeze中却看不到tensorboard; 后来，从pip freeze中可以看到tensorflow-tensorboard；在tensorflow 1.6以及之后的版本中，从pip freeze可以看到tensorboard.
