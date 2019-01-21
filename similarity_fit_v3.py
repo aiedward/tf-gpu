@@ -170,7 +170,7 @@ def train_batch(epochs):
 
             if epoch % 100 == 0:
                 print('Epoch {:>2}:  '.format(epoch + 1), end='')
-                print('Loss: {:>10.4f} Training Accuracy: {:.6f}'.format(
+                print('Loss: {:<10.4f} Training Accuracy: {:.6f}'.format(
                     loss, train_acc))
                 print("prob: ", prob, end='\n\n')
 
