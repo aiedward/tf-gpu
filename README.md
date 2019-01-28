@@ -616,4 +616,13 @@ tensorflow中的矩阵乘法
     x = tf.Variable([range(1,6), range(5,10)], dtype=tf.float32) # x.shape: [2, 5]
     y = tf.matmul(w, x) # y.shape: [1, 5]
     
-    
+### tensorflow模型的保存
+
+不管是保存成python可用的格式，还是保存成java可用的pb格式，有一些基本原则是一致的：
+
+第一，复原模型的核心是复原variable，在java的pb格式中，似乎图结构也能够保存，需要注意的是placehodler和需要保存的tensor需要命名，placehodler的命名直接给name属性就可以，tensor的命名需要用tf.identity(). 注意variable要可以reuse.
+
+第二，python一般是自己重构图结构，然后导入variable，也许也有办法把图结构直接导入。
+
+总之，不管是什么，需要复原的话，名字非常重要。
+
