@@ -616,6 +616,12 @@ tensorflow中的矩阵乘法
     x = tf.Variable([range(1,6), range(5,10)], dtype=tf.float32) # x.shape: [2, 5]
     y = tf.matmul(w, x) # y.shape: [1, 5]
     
+### gradle中下载java版的tensorflow
+
+compile group: 'org.tensorflow', name: 'tensorflow', versoin: '1.11.0'
+
+[TensorFlow for Java](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/java)
+    
 ### tensorflow模型的保存
 
 不管是保存成python可用的格式，还是保存成java可用的pb格式，有一些基本原则是一致的：
@@ -734,4 +740,79 @@ java中模型的导入：
         }
 
 [Tensorflow三种数据读取方式详解(“Preload”、“Feeding”、“文件名队列、样本队列、多线程”)](https://zhuanlan.zhihu.com/p/29756826)
+
+在java中运行tensorflow，run tensor得到的结果是一维向量或者二维向量，该如何处理
+
+[tensorflow：一个简单的python训练保存模型，java还原模型方法](https://blog.csdn.net/WitsMakeMen/article/details/80064724)
+
+    public class Test {
+        public static void main(String[] args) throws InvalidProtocolBufferException {
+
+            /*加载模型 */
+            SavedModelBundle savedModelBundle = SavedModelBundle.load("/Users/yourName/pythonworkspace/tmp/savedModel/lrmodel", "test_saved_model");
+            /*构建预测张量*/
+            float[][] matrix = new float[1][2];
+            matrix[0][0] = 1;
+            matrix[0][1] = 6;
+            Tensor<Float> x = Tensor.create(matrix, Float.class);
+            /*获取模型签名*/
+            SignatureDef sig = MetaGraphDef.parseFrom(savedModelBundle.metaGraphDef()).getSignatureDefOrThrow("test_signature");
+            String inputName = sig.getInputsMap().get("input").getName();
+            System.out.println(inputName);
+            String outputName = sig.getOutputsMap().get("output").getName();
+            System.out.println(outputName);
+            /*预测模型结果*/
+            List<Tensor<?>> y = savedModelBundle.session().runner().feed(inputName, x).fetch(outputName).run();
+            float [][] result = new float[1][1];
+            System.out.println(y.get(0).dataType());
+            System.out.println(y.get(0).copyTo(result));
+            System.out.println(result[0][0]);
+        }
+    }
+
+tf.reset_default_graph()会清除并重置默认Graph
+
+如果在创建Session时没有指定Graph，则加载默认Graph，如果在一个进程中创建了多个Graph，那么创建不同的Session来加载每个graph
+
+[Tensor.create() slow for large arrays](https://github.com/tensorflow/tensorflow/issues/8244)
+
+使用Tensor.create()
+
+    public void test() {
+      Random r = new Random();
+      int imageSize = 224 * 224 * 3;
+      int batch = 128;
+      float[][] input = new float[batch][imageSize];
+      for(int i = 0; i < batch; i++) {
+        for(int j = 0; j < imageSize; j++) {
+          input[i][j] = r.nextFloat();
+        }
+      }
+
+      long start = System.nanoTime();
+      Tensor.create(input);
+      long end = System.nanoTime();
+      // Around 1.5sec
+      System.out.println("Took: " + (end - start));
+    }
+
+使用create(shape, FloatBuffer)
+
+    public void test() {
+        Random r = new Random();
+        int imageSize = 224 * 224 * 3;
+        int batch = 128;
+        long[] shape = new long[] {batch, imageSize};
+        FloatBuffer buf = FloatBuffer.allocate(imageSize * batch);
+        for (int i = 0; i < imageSize * batch; ++i) {
+          buf.put(r.nextFloat());
+        }
+        buf.flip();
+
+        long start = System.nanoTime();
+        Tensor.create(shape, buf);
+        long end = System.nanoTime();
+        System.out.println("Took: " + (end - start));
+    }
+
 
