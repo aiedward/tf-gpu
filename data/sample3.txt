@@ -1,0 +1,8 @@
+sentence	category
+央行 资产 负债 表	finance
+球员 得分 能力	sports
+房地产 市场	finance
+银行 信贷	finance
+规模 以上 工业 企业 利润	finance
+球队 得分 能力	sports
+比赛 冠军 是 谁	sports
