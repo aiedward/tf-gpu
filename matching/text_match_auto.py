@@ -53,6 +53,7 @@ def auto_results(train_data_pack, test_data_pack):
             data_pack=train_data_pack,
             verbose=0
         )
+        print('model name: ', model_ok.params['name'])
         test_ok = preprocesor_ok.transform(test_data_pack, verbose=0)
 
         callback = mz.engine.callbacks.EvaluateAllMetrics(
