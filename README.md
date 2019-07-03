@@ -34,6 +34,16 @@ When no packages are available, you should use an official ["runfile"](http://ww
 
 终端输入nvidia-smi，可以看到所装显卡驱动的信息，也可以看到gpu的基本信息
 
+    ps -a # 作用有限，只能展示少量进程
+
+    ps a # 显示现行终端机下的所有程序，包括其他用户的程序
+
+    ps -ef # 最全的展示进程的命令
+
+    ps -ef | grep python # 列出所有python进程
+
+    kill -9 pid # 杀掉某个进程
+
 nvidia的显卡驱动是兼容之前版本的，也就是说，旧的驱动不支持新的显卡，但新的驱动是支持旧的显卡的。
 
 [显卡支持信息](https://github.com/NVIDIA/nvidia-docker/wiki/CUDA)
