@@ -35,13 +35,13 @@ When no packages are available, you should use an official ["runfile"](http://ww
 终端输入nvidia-smi，可以看到所装显卡驱动的信息，也可以看到gpu的基本信息
 
     ps -a # 作用有限，只能展示少量进程
-
+    
     ps a # 显示现行终端机下的所有程序，包括其他用户的程序
-
+    
     ps -ef # 最全的展示进程的命令
-
+    
     ps -ef | grep python # 列出所有python进程
-
+    
     kill -9 pid # 杀掉某个进程
 
 nvidia的显卡驱动是兼容之前版本的，也就是说，旧的驱动不支持新的显卡，但新的驱动是支持旧的显卡的。
@@ -70,7 +70,7 @@ nvidia-smi还是比较必要的，可以看到具体程序比如python对gpu的�
 在linux中，如果之前没有安装过CUDA（ls /usr/local查看），可以用apt安装。
     
     sudo apt-get install cuda-8-0
-    
+
 Note: I strongly suggest not to sue it, as it changes the paths and makes the installation of other tools more difficult.
     
 如果之前装过其他版本的CUDA，可能不能成功安装，这时候需要先下载cuda-8-0的安装文件，然后手动安装。
@@ -89,7 +89,7 @@ There is only one requirement, that one needs to satisfy in order to install mul
 
     sudo chmod +x cuda_8.0.61_375.26_linux.run
     sudo sh cuda_8.0.61_375.26_linux.run --tmpdir=/tmp --override
-    
+
 override是因为电脑上的gcc版本相对安装文件可能偏高，使用override可以忽略这一点。如果不加，会碰到一个错误，Installation Failed. Using unsupported Compiler. ，这是因为 Ubuntu 16.04 默认的 GCC 5.4 对于 CUDA 8.x来说过于新了，CUDA 安装脚本还不能识别新版本的 GCC。
 
 在linux装好cuda之后，有可能需要重启电脑。
@@ -101,27 +101,27 @@ override是因为电脑上的gcc版本相对安装文件可能偏高，使用ove
     $ sudo sh runfile.run --silent \
                 --toolkit --toolkitpath=/my/new/toolkit \
                 --samples --samplespath=/my/new/samples
-                
+
 比如
 
     sudo sh ./cuda_8.0.61_375.26_linux-run --silent --toolkit --toolkitpath=/home/deco/local/cuda-8.0 --samples --samplespath=/home/deco/local/cuda-8.0/samples
-                
+
 就可以安装在指定的目录中，其中toolkitpath就是指定的目录，samplespath是验证安装成功的samples所在的目录。也可以用conda引入专门的目录，把工具装到某个虚拟环境的目录中，这样，当remove某个虚拟环境的时候，就可以把该工具的目录也一起删掉。
 
 另外，需要导入环境变量
 
     export PATH=/my/new/toolkit/bin/:$PATH
     export LD_LIBRARY_PATH=/my/new/toolkit/lib64/:$LD_LIBRARY_PATH
-    
+
 或者
 
     export PATH=/home/deco/local/cuda-8.0/bin${PATH:+:${PATH}}
     export LD_LIBRARY_PATH=/home/deco/local/cuda-8.0/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-    
+
 导入了PATH之后，nvcc命令就可以找到了，可以用来看cuda的信息
 
     nvcc --version
-    
+
 Now, we have the environment and the TensorFlow installed. Question how this environment will know which CUDA to use? First of all, we need to understand how TensoFlow (and any other DL framework) is searching where CUDA is installed. Since CUDA is just binary files (libraries), other programs are searching it among the paths, that are specified in the LD_LIBRARY_PATH variable. So, if this path includes files from the CUDA9.0 then CUDA9.0 will be used by any DL framework. Okay, we just need to set the variable correctly (LD_LIBRARY_PATH) for each of our environment。
 
 可见，LD_LIBRARY_PATH是tensorflow寻找cuda所需要的环境变量，PATH的设置其实不是很必要，但不设的话，就找不到nvcc命令
@@ -131,7 +131,7 @@ Now, we have the environment and the TensorFlow installed. Question how this env
     cd /usr/local/cuda-8.0/samples/1_Utilities/deviceQuery
     sudo make
     ./deviceQuery
-    
+
 会输出相关信息
 
 cuda 8.0还有patch 2需要安装，对效率和安全性都有提升，但目前还不知道在linux中是否能安装到指定目录中，也还没有尝试安装。
@@ -152,11 +152,11 @@ cuDNN下载需要先注册，对于ubuntu等一般选择linux版本下载，比�
 
     $scp local_file remote_username@remote_ip:remote_folder
     $scp local_file remote_username@remote_ip:remote_file
-    
+
 复制目录：
 
     $scp -r local_folder remote_username@remote_ip:remote_folder
-    
+
 [scp 跨机远程拷贝](http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/scp.html)
 
 linux安装，首先解压，然后拷贝文件
@@ -164,13 +164,13 @@ linux安装，首先解压，然后拷贝文件
     tar -xzvf cudnn-8.0-linux-x64-v5.1.tgz
     sudo cp cuda/include/cudnn.h /usr/local/cuda-8.0/include
     sudo cp cuda/lib64/libcudnn* /usr/local/cuda-8.0/lib64
-    
+
 具体来讲
 
     tar -xzvf cudnn-8.0-linux-x64-v5.1.tgz
     sudo cp cuda/include/cudnn.h /home/deco/local/cuda-8.0/include
     sudo cp cuda/lib64/libcudnn* /home/deco/local/cuda-8.0/lib64
-   
+
 windows安装    
 Cudnn解压后将bin,include,lib三个文件夹里面的内容覆盖至Cuda安装目录下，默认路径为C:\Program Files\NVIDIA GPUComputing Toolkit\CUDA\v8.0（记住不是替换，是把Cudnn文件里的.dll文件添加到Cuda里面）
 
@@ -182,7 +182,7 @@ Cudnn解压后将bin,include,lib三个文件夹里面的内容覆盖至Cuda安�
 可以先装conda的社区包凑合着用
 
     conda install tensorflow-gpu=1.0
-    
+
 注：用这种方式安装会自动装上conda的cuda和cudnn，系统不用另外安装，即便装了调用的也是conda的社区版本。conda的win64通道已经删掉1.0。且win仍需在系统装CUDA和cuDNN，否则会缺DLL。
 
 注：不推荐用conda安装，装的是社区包，官方并不支持，由此产生的问题需要自行解决。
@@ -197,19 +197,19 @@ Cudnn解压后将bin,include,lib三个文件夹里面的内容覆盖至Cuda安�
 
     from tensorflow.python.client import device_lib
     print(device_lib.list_local_devices())
-    
+
 安装完成后的测试代码：
 
     import tensorflow as tf
     hello = tf.constant('Hello, TensorFlow!')
     sess = tf.Session()
     print(sess.run(hello))
-    
+
 测试是否用上GPU
 
     import tensorflow as tf
     print(tf.test.gpu_device_name())
-    
+
 正常会输出/gpu:0
 
 [Tensorflow: How do you monitor GPU performance during model training in real-time?](https://stackoverflow.com/questions/45544603/tensorflow-how-do-you-monitor-gpu-performance-during-model-training-in-real-tim)
@@ -317,7 +317,7 @@ gradient vanishing的问题，首先是通过选取非None的gradient来解决�
     gradients = self.optimizer.compute_gradients(self.loss, self.all_params)
     capped_gradients = [(tf.clip_by_value(grad, -1., 1.), var) for
     grad, var in gradients if grad is not None]
-    
+
 除了tensor与variable没有关系、tensor与variable有不可微的关系这两种情况外，如果网络不是单输入单输出（例如ac网络中有两个输出），那么compute_gradients可能会返回（None，v），即部分变量没有对应的梯度，在下一步的时候NoneType会导致错误。因此，需要将有梯度的变量提取出来，记为grads_vars。之后，对grads_vars再一次计算梯度，得到了gradient。最后, 生成一个placeholder用于存储梯度，并调用apply_gradients更新网络。
 
 tf.train.Optimizer.compute_gradients(loss, var_list=None): 对var_list中的变量计算loss的梯度, 返回一个以元组(gradient, variable)组成的列表
@@ -333,7 +333,7 @@ tf.train.Optimizer.compute_gradients(loss, var_list=None): 对var_list中的变�
     optimizer = tf.train.AdamOptimizer(learning_rate=0.001, name='Adam').minimize(loss)
     adam_vars = [var for var in tf.all_variables() if 'Adam' in var.name]
     sess.run(tf.variables_initializer(adam_vars))
-    
+
 从tensorflow 1.1开始，os.environ["TF_CPP_MIN_LOG_LEVEL"]可以控制tensorflow内部的logging系统的输出强度，0输出info, 1输出warning, 2输出error, 3什么都不输出。tensorflow 1.0似乎并没有这个控制变量，会输出所有的info。
 
 在tensorflow中，log_device_placement=True可以控制tensorflow内部的logging系统把每一条tf.Session().run()的所用的gpu信息输出到logging.info()中。
@@ -341,7 +341,7 @@ tf.train.Optimizer.compute_gradients(loss, var_list=None): 对var_list中的变�
     sess_config = tf.ConfigProto(log_device_placement=True)
     sess_config.gpu_options.allow_growth = True
     self.sess = tf.Session(config=sess_config)
-    
+
 多进程使用GPU会导致OUT_OF_MEMORY_ERROR，这是由于tf默认会给任一进程分配所有能分配的显存，这样除了第一个进程其他进程都无显存可用。解决办法有两个，一是在运行命令前添加 CUDA_VISIBLE_DEVICES=9999（或任一大于你的显卡数的数字）禁用显卡，推荐对ps进程使用。二是在server配置里添加gpu_options=tf.GPUOptions(allow_growth=True)（或gpu_fraction）使得tf不会一次将显存分配完而是随着使用量逐渐增加.
 
 当设定sess_config.gpu_options.allow_growth = True的时候，某个tensorflow进程占用显存是逐渐增加的，比如刚开始没训练的时候只占100M，到后来占到4G多（batch size为16时所占掉的显存）
@@ -352,7 +352,7 @@ Device placement，可以指定使用哪一个gpu
 
     with tf.device("/device:GPU:1"):
       v = tf.get_variable("v", [1])
-    
+
 tensorflow本质上是一种函数式的编程语言，就拿z=ax+by来说，x, y是variable, a, b是placeholder, z是狭义的tensor. z本质上是一个函数，既有未知数，也有系数。广义的tensor不仅包括狭义的tensor，还包括variable, placeholder和constant.
 
 在tf.Session().run()的时候，可以把a, b的值传进去，比如a=1, b=2，就可以计算z这个tensor。当然也可以不用placeholder，直接用tf.constant，比如z=x+2y，这样在tf.Session().run()的时候，就不用传placeholder的值了。
@@ -373,20 +373,20 @@ To initialize all trainable variables in one go, before training starts, call tf
 
     session.run(tf.global_variables_initializer())
     # Now all variables are initialized.
-    
+
 If you do need to initialize variables yourself, you can run the variable's initializer operation. For example:
 
     session.run(my_variable.initializer)
-    
+
 You can also ask which variables have still not been initialized. For example, the following code prints the names of all variables which have not yet been initialized:
 
     print(session.run(tf.report_uninitialized_variables()))
-    
+
 Note that by default tf.global_variables_initializer does not specify the order in which variables are initialized. Therefore, if the initial value of a variable depends on another variable's value, it's likely that you'll get an error. Any time you use the value of a variable in a context in which not all variables are initialized (say, if you use a variable's value while initializing another variable), it is best to use variable.initialized_value() instead of variable:
 
     v = tf.get_variable("v", shape=(), initializer=tf.zeros_initializer())
     w = tf.get_variable("w", initializer=v.initialized_value() + 1)
-    
+
 Using variables
 
 To use the value of a tf.Variable in a TensorFlow graph, simply treat it like a normal tf.Tensor:
@@ -395,7 +395,7 @@ To use the value of a tf.Variable in a TensorFlow graph, simply treat it like a 
     w = v + 1  # w is a tf.Tensor which is computed based on the value of v.
                # Any time a variable is used in an expression it gets automatically
                # converted to a tf.Tensor representing its value.
-    
+
 To assign a value to a variable, use the methods assign, assign_add, and friends in the tf.Variable class. For example, here is how you can call these methods:
 
     v = tf.get_variable("v", shape=(), initializer=tf.zeros_initializer())
@@ -457,7 +457,7 @@ Since the desired behavior is unclear (create new variables or reuse the existin
         with tf.variable_scope("conv2"):
             # Variables created here will be named "conv2/weights", "conv2/biases".
             return conv_relu(relu1, [5, 5, 32, 32], [32])
-            
+
 If you do want the variables to be shared, you have two options. First, you can create a scope with the same name using reuse=True:
 
     with tf.variable_scope("model"):
@@ -478,18 +478,18 @@ Since depending on exact string names of scopes can feel dangerous, it's also po
       output1 = my_image_filter(input1)
     with tf.variable_scope(scope, reuse=True):
       output2 = my_image_filter(input2)
-      
+
 在tensorflow的debug中，可以使用tf.Session().run()来得到tensor的值，但必须是tensor才行。比如：
 
     loss = self.sess.run(self.loss, feed_dict)
     print('loss in _train_epoch in rc_model.py:', loss)
-
+    
     capped_gradients = [(tf.clip_by_value(grad, -1., 1.), var) for
                                     grad, var in gradients if grad is not None]
     results_g = self.sess.run(capped_gradients[1][0], feed_dict)
     print('results_g in _train_epoch in rc_model.py:', results_g)
     # capped_gradients[1][0]是个tensor，capped_gradients[1]是tensor与variable组成的tuple
-    
+
 某些时候，在运行tf.Session().run()时非常慢，为了看的更清楚，一般采取六个办法，一是把tensor分拆，只运行最小的tensor，比如tensor的list肯定可以分拆。二是减小batch size，因为batch size表示拟合计算cost或loss的时候，一次考虑多少个样本数或者数据点，考虑的样本数越少，计算loss时越快，计算loss的梯度时也越快；当然，同一个batch内的不同样本在处理的时候是map并行处理的，只有求和算loss的时候采用reduce加总处理；减小batch size，肯定是节省显存和内存的，对于由于显存几乎占满而导致的速度问题是有效的。三是缩短样本大小（往往也要重新运行程序，得到不一样的样本分配，得到不一样的batch），如果一个batch中有多个样本，样本长度是按最长的来算的，所以batch size较大的时候，样本长度的影响还是较大的。四是重新随机初始化variable（重新运行程序），因为有可能初始化的这一批variable所在的点在计算导数时非常困难，确实算的慢。五是初始化variable的时候不再使用随机值，而是使用之前拟合后的一些值，比如启用checkpoint，这些值往往会有更好的效果，计算起来会更快。六是使用更大显存、更大内存、更强GPU的机器。
 
 即使是很差的nvidia显卡，很小的显存（比如不足2G），一般也是可以支撑batch_size=1的，可以用这样的设置来检验程序是否正确。
@@ -518,7 +518,7 @@ However, name scope is ignored by tf.get_variable. We can see that in the follow
         v1 = tf.get_variable("var1", [1], dtype=tf.float32)
         v2 = tf.Variable(1, name="var2", dtype=tf.float32)
         a = tf.add(v1, v2)
-
+    
     print(v1.name)  # var1:0
     print(v2.name)  # my_scope/var2:0
     print(a.name)   # my_scope/Add:0
@@ -530,7 +530,7 @@ Variable reuse
 
     with tf.variable_scope("scope_name", reuse=tf.AUTO_REUSE):
         some_variable = tf.get_variable("variable_name", shape=set(), initilizer=None, trainable=False)
-        
+
 如果没有给定tf.variable_scope()，或者reuse=False，那么一段生成variable的代码最多只能执行一次。如果要生成新的variable，那么reuse=False。如果reuse=True，那么表示从tensorflow的图中拿已经创建好的variable，这样不需要再给shape和initializer属性。这时候，生成variable和相关tensor的代码可以执行多次，比较像普通的python函数。如果reuse=tf.AUTO_REUSE，就是自动化的reuse=True，第一次执行时默认reuse=False，之后默认reuse=True。
 
 tf.nn.l2_nomalize()会产生一些误差，但很小，即使不是10的-12次方，也能达到10的-9次方。可以通过设置参数epsilon来忽略这种差异。
@@ -546,13 +546,13 @@ tf.nn.l2_nomalize()会产生一些误差，但很小，即使不是10的-12次�
             tf.contrib.lookup.KeyValueTensorInitializer(keys, values), -1
         )
         out = table.lookup(tf.to_int32(idx))
-
+    
         return out
 
 在上面的table例子中，keys和values必须是简单的list，key和value的类型需要相同，可以都是int，float或者string。之所以有这个要求是因为tensorflow的图结构要用在优化程序中，数据结构要比较整齐才能保证有足够的效率。对于二维的placehoder，本质上是list of list的结构，有时候有根据行的index来得到list（tensor）的需求，也就是对一个tensor做slice. 有这种需求的话，常用的方法是tf.gather()或者tf.gather_nd(). 除此之外，做slice的时候index也可以是tensor，需要注意tf.meshgrid()和tf.stack().
 
     tf.equal(predict_label, tf.constant(test_label))
-    
+
 上面返回的是一个tensor，输入的参数中，predict_label是一个带有variable和placeholder的tensor，test_label是一个常量，这里，需要把它转化成tenfowflow常量，就可以和一般的tensor做比较了。
 
 tf.Session()当中，必须是tensor，可以是常量tensor，比如tf.constant(). 如果是tensor with variables，必须硬着头皮用tensorflow的相关操作，最后得到tensor输入到tf.Session()当中；这时，和tensor with variables有相互运算的量，可以用placeholder，也可以用constant或者tf.constant()；用constant或tf.constant()的好处是简单，用placehodler的场景一般是输入的样本，特别是多个batch的training sample data. 
@@ -561,32 +561,66 @@ tensor用于类似for loop: [tf.map_fn](https://stackoverflow.com/questions/4289
 
     a = tf.constant([[1,2,3],[4,5,6]])
     b = tf.constant([True, False], dtype=tf.bool)
-
+    
     c = tf.map_fn(lambda x: (x[0], x[1]), (a,b), dtype=(tf.int32, tf.bool))
-
+    
     c[0].eval()
     array([[1, 2, 3],
            [4, 5, 6]], dtype=int32)
     c[1].eval()
     array([ True, False], dtype=bool)
-    
+
 [How to pass list of tensors as a input to the graph in tensorflow?](https://stackoverflow.com/questions/36901287/how-to-pass-list-of-tensors-as-a-input-to-the-graph-in-tensorflow)
 
 This is possible using the new tf.map_fn(), tf.foldl() tf.foldr() or (most generally) tf.scan() higher-order operators, which were added to TensorFlow in version 0.8. The particular operator that you would use depends on the computation that you want to perform. For example, if you wanted to perform the same function on each row of the tensor and pack the elements back into a single tensor, you would use tf.map_fn():
 
     p = tf.placeholder(tf.float32, shape=[None, None, 100])
-
+    
     def f(x):
         # x will be a tensor of shape [None, 100].
         return tf.reduce_sum(x)
-
+    
     # Compute the sum of each [None, 100]-sized row of `p`.
     # N.B. You can do this directly using tf.reduce_sum(), but this is intended as 
     # a simple example.
     result = tf.map_fn(f, p)
-    
+
+#### gather系列
+
 tf.gather() is important for tensor slicing
-    
+
+[tf.gather tf.gather_nd 和 tf.batch_gather 使用方法](https://blog.csdn.net/zby1001/article/details/86551667)  
+
+```
+import tensorflow as tf
+tensor_a = tf.Variable([[1,2,3],[4,5,6],[7,8,9]])
+tensor_b = tf.Variable([1,2,0],dtype=tf.int32)
+tensor_c = tf.Variable([0,0],dtype=tf.int32)
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    print(sess.run(tf.gather(tensor_a,tensor_b)))
+    print(sess.run(tf.gather(tensor_a,tensor_c)))
+```
+
+对于tensor_a,其第1个元素为[4,5,6]，第2个元素为[7,8,9],第0个元素为[1,2,3],所以以[1,2,0]为索引的返回值是[[4,5,6],[7,8,9],[1,2,3]]，同样的，以[0,0]为索引的值为[[1,2,3],[1,2,3]]。
+
+tf.gather_nd功能和参数与tf.gather类似，不同之处在于tf.gather_nd支持多维度索引。
+
+```
+import tensorflow as tf
+tensor_a = tf.Variable([[1,2,3],[4,5,6],[7,8,9]])
+tensor_b = tf.Variable([[1,0],[1,1],[1,2]],dtype=tf.int32)
+tensor_c = tf.Variable([[0,2],[2,0]],dtype=tf.int32)
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    print(sess.run(tf.gather_nd(tensor_a,tensor_b)))
+    print(sess.run(tf.gather_nd(tensor_a,tensor_c)))
+```
+
+对于tensor_a,下标[1,0]的元素为4,下标为[1,1]的元素为5,下标为[1,2]的元素为6,索引[1,0],[1,1],[1,2]]的返回值为[4,5,6],同样的，索引[[0,2],[2,0]]的返回值为[3,7].
+
+tf.batch_gather(params,indices,name=None)支持对张量的批量索引，各参数意义见（1）中描述。注意因为是批处理，所以indices要有和params相同的第0个维度。
+
 [not iterable when eager execution is not enabled. ](https://stackoverflow.com/questions/49592980/tensor-objects-are-not-iterable-when-eager-execution-is-not-enabled-to-iterate)
 
 The error is happening because y_pred is a tensor (non iterable without eager execution), and itertools.permutations expects an iterable to create the permutations from. In addition, the part where you compute the minimum loss would not work either, because the values of tensor t are unknown at graph creation time.
@@ -615,14 +649,14 @@ One way I can think when we explicitly mention "idx" is:
 
     idx = [[[0,2],[0,0]], [[1,2],[1,0]]]
     output = tf.gather_nd(input, idx)
-    
+
 But I am not sure how to construct idx = [[[0,2],[0,0]], [[1,2],[1,0]]] from dynamically populated idx = [[2 0], [2 0]]
 
 You can construct the full indices by:
 
     #Use meshgrid to get [[0 0] [1 1]]
     mesh = tf.meshgrid(tf.range(indices.shape[1]), tf.range(indices.shape[0]))[1]
-
+    
     #Stack mesh and the idx
     full_indices = tf.stack([mesh, indices], axis=2)
     #Output
@@ -639,7 +673,7 @@ tensorflow版本查看及安装路径：
     import tensorflow as tf
     tf.__version__
     tf.__path__
-    
+
 [Python 之 numpy 和 tensorflow 中的各种乘法（点乘和矩阵乘）](https://www.cnblogs.com/liuq/p/9330134.html)
 
 tensorflow中矩阵或者向量的逐项相乘
@@ -647,13 +681,13 @@ tensorflow中矩阵或者向量的逐项相乘
     w = tf.Variable([[0.4], [1.2]], dtype=tf.float32) # w.shape: [2, 1]
     x = tf.Variable([range(1,6), range(5,10)], dtype=tf.float32) # x.shape: [2, 5]
     y = w * x     # 等同于 y = tf.multiply(w, x)   y.shape: [2, 5]
- 
+
 tensorflow中的矩阵乘法
 
     w = tf.Variable([[0.4, 1.2]], dtype=tf.float32) # w.shape: [1, 2]
     x = tf.Variable([range(1,6), range(5,10)], dtype=tf.float32) # x.shape: [2, 5]
     y = tf.matmul(w, x) # y.shape: [1, 5]
-    
+
 ### gradle中下载java版的tensorflow
 
 compile group: 'org.tensorflow', name: 'tensorflow', versoin: '1.11.0'
@@ -685,20 +719,20 @@ python中模型的保存：
     x = tf.placeholder(tf.float32, name="x")
     y = tf.get_variable("y", initializer=10.0)
     z = tf.log(x + y, name="z")
-
+    
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-
+    
         # 进行一些训练代码，此处省略
         # xxxxxxxxxxxx
-
+    
         # 显示图中的节点
         print([n.name for n in sess.graph.as_graph_def().node])
         frozen_graph_def = tf.graph_util.convert_variables_to_constants(
             sess,
             sess.graph_def,
             output_node_names=["z"])
-
+    
         # 保存图为pb文件
         with open('model.pb', 'wb') as f:
           f.write(frozen_graph_def.SerializeToString())
@@ -709,19 +743,19 @@ java中模型的导入：
     import org.tensorflow.Graph;
     import org.tensorflow.Session;
     import org.tensorflow.Tensor;
-
+    
     import java.io.FileInputStream;
     import java.io.IOException;
-
+    
     public class DemoImportGraph {
-
+    
         public static void main(String[] args) throws IOException {
             try (Graph graph = new Graph()) {
                 //导入图
                 byte[] graphBytes = IOUtils.toByteArray(new 
                 FileInputStream("model.pb"));
                 graph.importGraphDef(graphBytes);
-
+    
                 //根据图建立Session
                 try(Session session = new Session(graph)){
                     //相当于TensorFlow Python中的sess.run(z, feed_dict = {'x': 10.0})
@@ -731,7 +765,7 @@ java中模型的导入：
                     System.out.println("z = " + z);
                 }
             }
-
+    
         }
     }
 
@@ -758,7 +792,7 @@ java中模型的导入：
         }
         }
         }
-
+    
         Graph graph = new Graph();       
         Tensor tensor = Tensor.create(2);
         Tensor tensor2 = tensor.create(3);
@@ -785,7 +819,7 @@ java中模型的导入：
 
     public class Test {
         public static void main(String[] args) throws InvalidProtocolBufferException {
-
+    
             /*加载模型 */
             SavedModelBundle savedModelBundle = SavedModelBundle.load("/Users/yourName/pythonworkspace/tmp/savedModel/lrmodel", "test_saved_model");
             /*构建预测张量*/
@@ -826,7 +860,7 @@ tf.reset_default_graph()会清除并重置默认Graph
           input[i][j] = r.nextFloat();
         }
       }
-
+    
       long start = System.nanoTime();
       Tensor.create(input);
       long end = System.nanoTime();
@@ -846,7 +880,7 @@ tf.reset_default_graph()会清除并重置默认Graph
           buf.put(r.nextFloat());
         }
         buf.flip();
-
+    
         long start = System.nanoTime();
         Tensor.create(shape, buf);
         long end = System.nanoTime();
